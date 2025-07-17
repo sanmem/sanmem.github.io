@@ -91,7 +91,7 @@
             statusDiv.textContent = 'PDF 생성 중... 잠시만 기다려주세요.';
 
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            let doc;
 
             for (let i = 0; i < selectedFiles.length; i++) {
                 const file = selectedFiles[i];
@@ -105,28 +105,19 @@
                         img.onload = () => {
                             const imgWidth = img.width;
                             const imgHeight = img.height;
-                            const pdfWidth = doc.internal.pageSize.getWidth();
-                            const pdfHeight = doc.internal.pageSize.getHeight();
-                            
-                            // 이미지 비율에 맞춰 PDF 페이지 크기 조정
-                            const ratio = imgWidth / imgHeight;
-                            const pdfRatio = pdfWidth / pdfHeight;
 
-                            let finalWidth, finalHeight;
-                            if (ratio > pdfRatio) { // 이미지가 페이지보다 넓을 때
-                                finalWidth = pdfWidth;
-                                finalHeight = pdfWidth / ratio;
-                            } else { // 이미지가 페이지보다 높을 때
-                                finalHeight = pdfHeight;
-                                finalWidth = pdfHeight * ratio;
+                            if (i === 0) {
+                                // 첫 번째 이미지로 PDF 문서 생성 (단위: 픽셀)
+                                doc = new jsPDF({
+                                    unit: 'px',
+                                    format: [imgWidth, imgHeight]
+                                });
+                                doc.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+                            } else {
+                                // 다음 이미지를 새 페이지에 추가 (페이지 크기 = 이미지 크기)
+                                doc.addPage([imgWidth, imgHeight]);
+                                doc.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
                             }
-                            
-                            // 첫 페이지가 아니면 새 페이지 추가
-                            if (i > 0) {
-                                doc.addPage();
-                            }
-                            
-                            doc.addImage(imgData, 'JPEG', 0, 0, finalWidth, finalHeight);
                             resolve();
                         };
                     };
@@ -134,7 +125,7 @@
                 });
             }
 
-            doc.save('merged_images.pdf');
+            doc.save('merged_images_no_margin.pdf');
             statusDiv.textContent = 'PDF 생성이 완료되었습니다!';
             convertBtn.disabled = false;
             imageInput.value = ''; // 입력 필드 초기화
