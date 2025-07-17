@@ -107,16 +107,20 @@
                             const imgHeight = img.height;
 
                             if (i === 0) {
-                                // 첫 번째 이미지로 PDF 문서 생성 (단위: 픽셀)
+                                // 첫 번째 이미지로 PDF 문서 생성 (단위: 포인트로 변환)
+                                const pdfWidth = imgWidth * 0.75; // px to pt 변환
+                                const pdfHeight = imgHeight * 0.75;
                                 doc = new jsPDF({
-                                    unit: 'px',
-                                    format: [imgWidth, imgHeight]
+                                    unit: 'pt',
+                                    format: [pdfWidth, pdfHeight]
                                 });
-                                doc.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+                                doc.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
                             } else {
                                 // 다음 이미지를 새 페이지에 추가 (페이지 크기 = 이미지 크기)
-                                doc.addPage([imgWidth, imgHeight]);
-                                doc.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+                                const pdfWidth = imgWidth * 0.75;
+                                const pdfHeight = imgHeight * 0.75;
+                                doc.addPage([pdfWidth, pdfHeight]);
+                                doc.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
                             }
                             resolve();
                         };
